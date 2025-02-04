@@ -79,14 +79,18 @@ func (d *QualityDefinitionDataSource) Read(ctx context.Context, req datasource.R
 		return
 	}
 	// Get qualitydefinitions current value
-	response, _, err := d.client.QualityDefinitionApi.ListQualityDefinition(ctx).Execute()
+	response, _, err := d.client.QualityDefinitionAPI.ListQualityDefinition(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, qualityDefinitionDataSourceName, err))
 
 		return
 	}
 
-	data.find(data.ID.ValueInt64(), response, &resp.Diagnostics)
+	definitions := make([]*readarr.QualityDefinitionResource, len(response))
+	for i := range response {
+		definitions[i] = &response[i]
+	}
+	data.find(data.ID.ValueInt64(), definitions, &resp.Diagnostics)
 	tflog.Trace(ctx, "read "+qualityDefinitionDataSourceName)
 	// Map response body to resource schema attribute
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

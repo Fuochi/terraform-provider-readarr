@@ -106,7 +106,7 @@ func (d *MetadataProfilesDataSource) Configure(ctx context.Context, req datasour
 
 func (d *MetadataProfilesDataSource) Read(ctx context.Context, _ datasource.ReadRequest, resp *datasource.ReadResponse) {
 	// Get metadataprofiles current value
-	response, _, err := d.client.MetadataProfileApi.ListMetadataProfile(ctx).Execute()
+	response, _, err := d.client.MetadataProfileAPI.ListMetadataProfile(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.List, metadataProfileResourceName, err))
 
@@ -117,7 +117,7 @@ func (d *MetadataProfilesDataSource) Read(ctx context.Context, _ datasource.Read
 	// Map response body to resource schema attribute
 	profiles := make([]MetadataProfile, len(response))
 	for i, p := range response {
-		profiles[i].write(ctx, p, &resp.Diagnostics)
+		profiles[i].write(ctx, &p, &resp.Diagnostics)
 	}
 
 	profileList, diags := types.SetValueFrom(ctx, MetadataProfile{}.getType(), profiles)

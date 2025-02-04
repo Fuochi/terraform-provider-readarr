@@ -97,14 +97,18 @@ func (d *AuthorDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	}
 
 	// Get authors current value
-	response, _, err := d.client.AuthorApi.ListAuthor(ctx).Execute()
+	response, _, err := d.client.AuthorAPI.ListAuthor(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, authorDataSourceName, err))
 
 		return
 	}
 
-	data.find(ctx, data.ForeignAuthorID.ValueString(), response, &resp.Diagnostics)
+	pointerResponse := make([]*readarr.AuthorResource, len(response))
+	for i := range response {
+		pointerResponse[i] = &response[i]
+	}
+	data.find(ctx, data.ForeignAuthorID.ValueString(), pointerResponse, &resp.Diagnostics)
 	tflog.Trace(ctx, "read "+authorDataSourceName)
 	// Map response body to resource schema attribute
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

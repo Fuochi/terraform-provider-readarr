@@ -102,14 +102,18 @@ func (d *CustomFormatDataSource) Read(ctx context.Context, req datasource.ReadRe
 		return
 	}
 	// Get customFormat current value
-	response, _, err := d.client.CustomFormatApi.ListCustomFormat(ctx).Execute()
+	response, _, err := d.client.CustomFormatAPI.ListCustomFormat(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, customFormatDataSourceName, err))
 
 		return
 	}
 
-	data.find(ctx, data.Name.ValueString(), response, &resp.Diagnostics)
+	pointerResponse := make([]*readarr.CustomFormatResource, len(response))
+	for i := range response {
+		pointerResponse[i] = &response[i]
+	}
+	data.find(ctx, data.Name.ValueString(), pointerResponse, &resp.Diagnostics)
 	tflog.Trace(ctx, "read "+customFormatDataSourceName)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

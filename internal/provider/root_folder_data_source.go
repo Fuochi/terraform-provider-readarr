@@ -124,14 +124,18 @@ func (d *RootFolderDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		return
 	}
 	// Get rootfolders current value
-	response, _, err := d.client.RootFolderApi.ListRootFolder(ctx).Execute()
+	response, _, err := d.client.RootFolderAPI.ListRootFolder(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, rootFolderDataSourceName, err))
 
 		return
 	}
 
-	folder.find(ctx, folder.Path.ValueString(), response, &resp.Diagnostics)
+	folders := make([]*readarr.RootFolderResource, len(response))
+	for i := range response {
+		folders[i] = &response[i]
+	}
+	folder.find(ctx, folder.Path.ValueString(), folders, &resp.Diagnostics)
 
 	tflog.Trace(ctx, "read "+rootFolderDataSourceName)
 	// Map response body to resource schema attribute

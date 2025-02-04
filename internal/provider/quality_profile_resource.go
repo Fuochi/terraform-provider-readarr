@@ -242,7 +242,7 @@ func (r *QualityProfileResource) Create(ctx context.Context, req resource.Create
 	request := profile.read(ctx, r.getQualityIDs(ctx, &resp.Diagnostics), r.getFormatsIDs(ctx, &resp.Diagnostics), &resp.Diagnostics)
 
 	// Create new QualityProfile
-	response, _, err := r.client.QualityProfileApi.CreateQualityProfile(ctx).QualityProfileResource(*request).Execute()
+	response, _, err := r.client.QualityProfileAPI.CreateQualityProfile(ctx).QualityProfileResource(*request).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Create, qualityProfileResourceName, err))
 
@@ -266,7 +266,7 @@ func (r *QualityProfileResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Get qualityprofile current value
-	response, _, err := r.client.QualityProfileApi.GetQualityProfileById(ctx, int32(profile.ID.ValueInt64())).Execute()
+	response, _, err := r.client.QualityProfileAPI.GetQualityProfileById(ctx, int32(profile.ID.ValueInt64())).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, qualityProfileResourceName, err))
 
@@ -293,7 +293,7 @@ func (r *QualityProfileResource) Update(ctx context.Context, req resource.Update
 	request := profile.read(ctx, r.getQualityIDs(ctx, &resp.Diagnostics), r.getFormatsIDs(ctx, &resp.Diagnostics), &resp.Diagnostics)
 
 	// Update QualityProfile
-	response, _, err := r.client.QualityProfileApi.UpdateQualityProfile(ctx, strconv.Itoa(int(request.GetId()))).QualityProfileResource(*request).Execute()
+	response, _, err := r.client.QualityProfileAPI.UpdateQualityProfile(ctx, strconv.Itoa(int(request.GetId()))).QualityProfileResource(*request).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Update, qualityProfileResourceName, err))
 
@@ -316,7 +316,7 @@ func (r *QualityProfileResource) Delete(ctx context.Context, req resource.Delete
 	}
 
 	// Delete qualityprofile current value
-	_, err := r.client.QualityProfileApi.DeleteQualityProfile(ctx, int32(ID)).Execute()
+	_, err := r.client.QualityProfileAPI.DeleteQualityProfile(ctx, int32(ID)).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Delete, qualityProfileResourceName, err))
 
@@ -347,7 +347,7 @@ func (p *QualityProfile) write(ctx context.Context, profile *readarr.QualityProf
 	for _, g := range profile.GetItems() {
 		if g.GetAllowed() {
 			group := QualityGroup{}
-			group.write(ctx, g, diags)
+			group.write(ctx, &g, diags)
 			qualityGroups = append(qualityGroups, group)
 		}
 	}
@@ -357,7 +357,7 @@ func (p *QualityProfile) write(ctx context.Context, profile *readarr.QualityProf
 	for _, f := range profile.GetFormatItems() {
 		if f.GetScore() != 0 {
 			format := FormatItem{}
-			format.write(f)
+			format.write(&f)
 			formatItems = append(formatItems, format)
 		}
 	}
@@ -377,7 +377,7 @@ func (g *QualityGroup) write(ctx context.Context, group *readarr.QualityProfileQ
 
 	qualities := make([]Quality, len(group.GetItems()))
 	for m, q := range group.GetItems() {
-		qualities[m].write(q)
+		qualities[m].write(&q)
 	}
 
 	if len(group.GetItems()) == 0 {
@@ -408,7 +408,6 @@ func (f *FormatItem) write(format *readarr.ProfileFormatItemResource) {
 
 func (p *QualityProfile) read(ctx context.Context, qualitiesIDs []int32, formatIDs []int32, diags *diag.Diagnostics) *readarr.QualityProfileResource {
 	var allowedQualities, allowedFormats []int32
-
 	groups := make([]QualityGroup, len(p.QualityGroups.Elements()))
 	diags.Append(p.QualityGroups.ElementsAs(ctx, &groups, false)...)
 
@@ -423,12 +422,10 @@ func (p *QualityProfile) read(ctx context.Context, qualitiesIDs []int32, formatI
 		if !slices.Contains(allowedQualities, id) {
 			quality := readarr.NewQuality()
 			quality.SetId(id)
-
 			item := readarr.NewQualityProfileQualityItemResource()
 			item.SetAllowed(false)
-			item.SetItems([]*readarr.QualityProfileQualityItemResource{})
+			item.SetItems([]readarr.QualityProfileQualityItemResource{})
 			item.SetQuality(*quality)
-
 			qualities = append(qualities, item)
 		}
 	}
@@ -455,6 +452,17 @@ func (p *QualityProfile) read(ctx context.Context, qualitiesIDs []int32, formatI
 		}
 	}
 
+	// Convert pointer slices to value slices
+	qualityItems := make([]readarr.QualityProfileQualityItemResource, len(qualities))
+	for i, q := range qualities {
+		qualityItems[i] = *q
+	}
+
+	formatList := make([]readarr.ProfileFormatItemResource, len(formatItems))
+	for i, f := range formatItems {
+		formatList[i] = *f
+	}
+
 	profile := readarr.NewQualityProfileResource()
 	profile.SetUpgradeAllowed(p.UpgradeAllowed.ValueBool())
 	profile.SetId(int32(p.ID.ValueInt64()))
@@ -462,8 +470,8 @@ func (p *QualityProfile) read(ctx context.Context, qualitiesIDs []int32, formatI
 	profile.SetMinFormatScore(int32(p.MinFormatScore.ValueInt64()))
 	profile.SetCutoffFormatScore(int32(p.CutoffFormatScore.ValueInt64()))
 	profile.SetName(p.Name.ValueString())
-	profile.SetItems(qualities)
-	profile.SetFormatItems(formatItems)
+	profile.SetItems(qualityItems)
+	profile.SetFormatItems(formatList)
 
 	return profile
 }
@@ -496,7 +504,11 @@ func (g *QualityGroup) read(ctx context.Context, allowedQualities *[]int32, diag
 	quality.SetId(int32(g.ID.ValueInt64()))
 	quality.SetName(g.Name.ValueString())
 	quality.SetAllowed(true)
-	quality.SetItems(items)
+	qualityItems := make([]readarr.QualityProfileQualityItemResource, len(items))
+	for i, item := range items {
+		qualityItems[i] = *item
+	}
+	quality.SetItems(qualityItems)
 
 	return quality
 }
@@ -524,7 +536,7 @@ func (f *FormatItem) read() *readarr.ProfileFormatItemResource {
 
 func (r QualityProfileResource) getQualityIDs(ctx context.Context, diags *diag.Diagnostics) []int32 {
 	// Get qualitydefinitions current value
-	qualities, _, err := r.client.QualityDefinitionApi.ListQualityDefinition(ctx).Execute()
+	qualities, _, err := r.client.QualityDefinitionAPI.ListQualityDefinition(ctx).Execute()
 	if err != nil {
 		diags.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, qualityDefinitionsDataSourceName, err))
 
@@ -545,7 +557,7 @@ func (r QualityProfileResource) getQualityIDs(ctx context.Context, diags *diag.D
 
 func (r QualityProfileResource) getFormatsIDs(ctx context.Context, diags *diag.Diagnostics) []int32 {
 	// Get qualitydefinitions current value
-	formats, _, err := r.client.CustomFormatApi.ListCustomFormat(ctx).Execute()
+	formats, _, err := r.client.CustomFormatAPI.ListCustomFormat(ctx).Execute()
 	if err != nil {
 		diags.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, customFormatsDataSourceName, err))
 

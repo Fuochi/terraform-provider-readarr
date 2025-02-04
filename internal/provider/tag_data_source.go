@@ -62,14 +62,18 @@ func (d *TagDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 	}
 
 	// Get tags current value
-	response, _, err := d.client.TagApi.ListTag(ctx).Execute()
+	response, _, err := d.client.TagAPI.ListTag(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, tagDataSourceName, err))
 
 		return
 	}
 
-	data.find(data.Label.ValueString(), response, &resp.Diagnostics)
+	tags := make([]*readarr.TagResource, len(response))
+	for i := range response {
+		tags[i] = &response[i]
+	}
+	data.find(data.Label.ValueString(), tags, &resp.Diagnostics)
 	tflog.Trace(ctx, "read "+tagDataSourceName)
 	// Map response body to resource schema attribute
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

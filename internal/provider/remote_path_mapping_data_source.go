@@ -70,14 +70,18 @@ func (d *RemotePathMappingDataSource) Read(ctx context.Context, req datasource.R
 		return
 	}
 	// Get remote path mapping current value
-	response, _, err := d.client.RemotePathMappingApi.ListRemotePathMapping(ctx).Execute()
+	response, _, err := d.client.RemotePathMappingAPI.ListRemotePathMapping(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, remotePathMappingDataSourceName, err))
 
 		return
 	}
 
-	data.find(data.ID.ValueInt64(), response, &resp.Diagnostics)
+	mappings := make([]*readarr.RemotePathMappingResource, len(response))
+	for i := range response {
+		mappings[i] = &response[i]
+	}
+	data.find(data.ID.ValueInt64(), mappings, &resp.Diagnostics)
 	tflog.Trace(ctx, "read "+remotePathMappingDataSourceName)
 	// Map response body to resource schema attribute
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

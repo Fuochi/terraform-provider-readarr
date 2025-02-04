@@ -121,7 +121,7 @@ func (p *ReadarrProvider) Configure(ctx context.Context, req provider.ConfigureR
 
 	// Configuring client. API Key management could be changed once new options avail in sdk.
 	config := readarr.NewConfiguration()
-	config.AddDefaultHeader("X-Api-Key", key)
+	config.AddDefaultHeader("X-API-Key", key)
 	config.Servers[0].URL = url
 	client := readarr.NewAPIClient(config)
 

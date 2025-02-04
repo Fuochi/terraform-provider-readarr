@@ -156,7 +156,7 @@ func (r *AuthorResource) Create(ctx context.Context, req resource.CreateRequest,
 	options.SetMonitor(readarr.MONITORTYPES_ALL)
 	options.SetSearchForMissingBooks(true)
 
-	response, _, err := r.client.AuthorApi.CreateAuthor(ctx).AuthorResource(*request).Execute()
+	response, _, err := r.client.AuthorAPI.CreateAuthor(ctx).AuthorResource(*request).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Create, authorResourceName, err))
 
@@ -180,7 +180,7 @@ func (r *AuthorResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	// Get author current value
-	response, _, err := r.client.AuthorApi.GetAuthorById(ctx, int32(author.ID.ValueInt64())).Execute()
+	response, _, err := r.client.AuthorAPI.GetAuthorById(ctx, int32(author.ID.ValueInt64())).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, authorResourceName, err))
 
@@ -206,7 +206,7 @@ func (r *AuthorResource) Update(ctx context.Context, req resource.UpdateRequest,
 	// Update Author
 	request := author.read(ctx, &resp.Diagnostics)
 
-	response, _, err := r.client.AuthorApi.UpdateAuthor(ctx, fmt.Sprint(request.GetId())).AuthorResource(*request).Execute()
+	response, _, err := r.client.AuthorAPI.UpdateAuthor(ctx, fmt.Sprint(request.GetId())).AuthorResource(*request).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Update, authorResourceName, err))
 
@@ -229,7 +229,7 @@ func (r *AuthorResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 
 	// Delete author current value
-	_, err := r.client.AuthorApi.DeleteAuthor(ctx, int32(ID)).Execute()
+	_, err := r.client.AuthorAPI.DeleteAuthor(ctx, int32(ID)).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Delete, authorResourceName, err))
 

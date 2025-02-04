@@ -194,7 +194,7 @@ func (r *NotificationKavitaResource) Create(ctx context.Context, req resource.Cr
 	// Create new NotificationKavita
 	request := notification.read(ctx, &resp.Diagnostics)
 
-	response, _, err := r.client.NotificationApi.CreateNotification(ctx).NotificationResource(*request).Execute()
+	response, _, err := r.client.NotificationAPI.CreateNotification(ctx).NotificationResource(*request).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Create, notificationKavitaResourceName, err))
 
@@ -218,7 +218,7 @@ func (r *NotificationKavitaResource) Read(ctx context.Context, req resource.Read
 	}
 
 	// Get NotificationKavita current value
-	response, _, err := r.client.NotificationApi.GetNotificationById(ctx, int32(notification.ID.ValueInt64())).Execute()
+	response, _, err := r.client.NotificationAPI.GetNotificationById(ctx, int32(notification.ID.ValueInt64())).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, notificationKavitaResourceName, err))
 
@@ -244,7 +244,7 @@ func (r *NotificationKavitaResource) Update(ctx context.Context, req resource.Up
 	// Update NotificationKavita
 	request := notification.read(ctx, &resp.Diagnostics)
 
-	response, _, err := r.client.NotificationApi.UpdateNotification(ctx, strconv.Itoa(int(request.GetId()))).NotificationResource(*request).Execute()
+	response, _, err := r.client.NotificationAPI.UpdateNotification(ctx, strconv.Itoa(int(request.GetId()))).NotificationResource(*request).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Update, notificationKavitaResourceName, err))
 
@@ -267,7 +267,7 @@ func (r *NotificationKavitaResource) Delete(ctx context.Context, req resource.De
 	}
 
 	// Delete NotificationKavita current value
-	_, err := r.client.NotificationApi.DeleteNotification(ctx, int32(ID)).Execute()
+	_, err := r.client.NotificationAPI.DeleteNotification(ctx, int32(ID)).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Delete, notificationKavitaResourceName, err))
 

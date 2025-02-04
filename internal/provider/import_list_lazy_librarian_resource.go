@@ -206,7 +206,7 @@ func (r *ImportListLazyLibrarianResource) Create(ctx context.Context, req resour
 	// Create new ImportListLazyLibrarian
 	request := importList.read(ctx, &resp.Diagnostics)
 
-	response, _, err := r.client.ImportListApi.CreateImportList(ctx).ImportListResource(*request).Execute()
+	response, _, err := r.client.ImportListAPI.CreateImportList(ctx).ImportListResource(*request).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Create, importListLazyLibrarianResourceName, err))
 
@@ -230,7 +230,7 @@ func (r *ImportListLazyLibrarianResource) Read(ctx context.Context, req resource
 	}
 
 	// Get ImportListLazyLibrarian current value
-	response, _, err := r.client.ImportListApi.GetImportListById(ctx, int32(importList.ID.ValueInt64())).Execute()
+	response, _, err := r.client.ImportListAPI.GetImportListById(ctx, int32(importList.ID.ValueInt64())).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, importListLazyLibrarianResourceName, err))
 
@@ -256,7 +256,7 @@ func (r *ImportListLazyLibrarianResource) Update(ctx context.Context, req resour
 	// Update ImportListLazyLibrarian
 	request := importList.read(ctx, &resp.Diagnostics)
 
-	response, _, err := r.client.ImportListApi.UpdateImportList(ctx, strconv.Itoa(int(request.GetId()))).ImportListResource(*request).Execute()
+	response, _, err := r.client.ImportListAPI.UpdateImportList(ctx, strconv.Itoa(int(request.GetId()))).ImportListResource(*request).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Update, importListLazyLibrarianResourceName, err))
 
@@ -279,7 +279,7 @@ func (r *ImportListLazyLibrarianResource) Delete(ctx context.Context, req resour
 	}
 
 	// Delete ImportListLazyLibrarian current value
-	_, err := r.client.ImportListApi.DeleteImportList(ctx, int32(ID)).Execute()
+	_, err := r.client.ImportListAPI.DeleteImportList(ctx, int32(ID)).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Delete, importListLazyLibrarianResourceName, err))
 

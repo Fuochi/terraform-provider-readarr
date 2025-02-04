@@ -296,7 +296,7 @@ func (r *IndexerResource) Create(ctx context.Context, req resource.CreateRequest
 	// Create new Indexer
 	request := indexer.read(ctx, &resp.Diagnostics)
 
-	response, _, err := r.client.IndexerApi.CreateIndexer(ctx).IndexerResource(*request).Execute()
+	response, _, err := r.client.IndexerAPI.CreateIndexer(ctx).IndexerResource(*request).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Create, indexerResourceName, err))
 
@@ -323,7 +323,7 @@ func (r *IndexerResource) Read(ctx context.Context, req resource.ReadRequest, re
 	}
 
 	// Get Indexer current value
-	response, _, err := r.client.IndexerApi.GetIndexerById(ctx, int32(indexer.ID.ValueInt64())).Execute()
+	response, _, err := r.client.IndexerAPI.GetIndexerById(ctx, int32(indexer.ID.ValueInt64())).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, indexerResourceName, err))
 
@@ -352,7 +352,7 @@ func (r *IndexerResource) Update(ctx context.Context, req resource.UpdateRequest
 	// Update Indexer
 	request := indexer.read(ctx, &resp.Diagnostics)
 
-	response, _, err := r.client.IndexerApi.UpdateIndexer(ctx, strconv.Itoa(int(request.GetId()))).IndexerResource(*request).Execute()
+	response, _, err := r.client.IndexerAPI.UpdateIndexer(ctx, strconv.Itoa(int(request.GetId()))).IndexerResource(*request).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Update, indexerResourceName, err))
 
@@ -378,7 +378,7 @@ func (r *IndexerResource) Delete(ctx context.Context, req resource.DeleteRequest
 	}
 
 	// Delete Indexer current value
-	_, err := r.client.IndexerApi.DeleteIndexer(ctx, int32(ID)).Execute()
+	_, err := r.client.IndexerAPI.DeleteIndexer(ctx, int32(ID)).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Delete, indexerResourceName, err))
 
@@ -410,7 +410,11 @@ func (i *Indexer) write(ctx context.Context, indexer *readarr.IndexerResource, d
 	i.Name = types.StringValue(indexer.GetName())
 	i.Protocol = types.StringValue(string(indexer.GetProtocol()))
 	i.Categories = types.SetValueMust(types.Int64Type, nil)
-	helpers.WriteFields(ctx, i, indexer.GetFields(), indexerFields)
+	fields := make([]*readarr.Field, len(indexer.GetFields()))
+	for i := range indexer.GetFields() {
+		fields[i] = &indexer.GetFields()[i]
+	}
+	helpers.WriteFields(ctx, i, fields, indexerFields)
 }
 
 func (i *Indexer) read(ctx context.Context, diags *diag.Diagnostics) *readarr.IndexerResource {
@@ -425,7 +429,11 @@ func (i *Indexer) read(ctx context.Context, diags *diag.Diagnostics) *readarr.In
 	indexer.SetName(i.Name.ValueString())
 	indexer.SetProtocol(readarr.DownloadProtocol(i.Protocol.ValueString()))
 	diags.Append(i.Tags.ElementsAs(ctx, &indexer.Tags, true)...)
-	indexer.SetFields(helpers.ReadFields(ctx, i, indexerFields))
+	fields := make([]readarr.Field, len(helpers.ReadFields(ctx, i, indexerFields)))
+	for i, f := range helpers.ReadFields(ctx, i, indexerFields) {
+		fields[i] = *f
+	}
+	indexer.SetFields(fields)
 
 	return indexer
 }

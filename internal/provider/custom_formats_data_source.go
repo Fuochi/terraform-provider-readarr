@@ -113,8 +113,8 @@ func (d *CustomFormatsDataSource) Configure(ctx context.Context, req datasource.
 }
 
 func (d *CustomFormatsDataSource) Read(ctx context.Context, _ datasource.ReadRequest, resp *datasource.ReadResponse) {
-	// Get custom formatss current value
-	response, _, err := d.client.CustomFormatApi.ListCustomFormat(ctx).Execute()
+	// Get custom formats current value
+	response, _, err := d.client.CustomFormatAPI.ListCustomFormat(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.List, customFormatsDataSourceName, err))
 
@@ -122,9 +122,14 @@ func (d *CustomFormatsDataSource) Read(ctx context.Context, _ datasource.ReadReq
 	}
 
 	tflog.Trace(ctx, "read "+customFormatsDataSourceName)
-	// Map response body to resource schema attribute
-	formats := make([]CustomFormat, len(response))
-	for i, p := range response {
+
+	pointerResponse := make([]*readarr.CustomFormatResource, len(response))
+	for i := range response {
+		pointerResponse[i] = &response[i]
+	}
+
+	formats := make([]CustomFormat, len(pointerResponse))
+	for i, p := range pointerResponse {
 		formats[i].write(ctx, p, &resp.Diagnostics)
 	}
 

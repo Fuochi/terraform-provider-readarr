@@ -129,14 +129,18 @@ func (d *QualityProfileDataSource) Read(ctx context.Context, req datasource.Read
 		return
 	}
 	// Get qualityprofiles current value
-	response, _, err := d.client.QualityProfileApi.ListQualityProfile(ctx).Execute()
+	response, _, err := d.client.QualityProfileAPI.ListQualityProfile(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, qualityProfileDataSourceName, err))
 
 		return
 	}
 
-	data.find(ctx, data.Name.ValueString(), response, &resp.Diagnostics)
+	profiles := make([]*readarr.QualityProfileResource, len(response))
+	for i := range response {
+		profiles[i] = &response[i]
+	}
+	data.find(ctx, data.Name.ValueString(), profiles, &resp.Diagnostics)
 
 	tflog.Trace(ctx, "read "+qualityProfileDataSourceName)
 	// Map response body to resource schema attribute

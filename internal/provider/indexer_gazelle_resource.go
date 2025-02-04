@@ -206,7 +206,7 @@ func (r *IndexerGazelleResource) Create(ctx context.Context, req resource.Create
 	// Create new IndexerGazelle
 	request := indexer.read(ctx, &resp.Diagnostics)
 
-	response, _, err := r.client.IndexerApi.CreateIndexer(ctx).IndexerResource(*request).Execute()
+	response, _, err := r.client.IndexerAPI.CreateIndexer(ctx).IndexerResource(*request).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Create, indexerGazelleResourceName, err))
 
@@ -230,7 +230,7 @@ func (r *IndexerGazelleResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Get IndexerGazelle current value
-	response, _, err := r.client.IndexerApi.GetIndexerById(ctx, int32(indexer.ID.ValueInt64())).Execute()
+	response, _, err := r.client.IndexerAPI.GetIndexerById(ctx, int32(indexer.ID.ValueInt64())).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, indexerGazelleResourceName, err))
 
@@ -256,7 +256,7 @@ func (r *IndexerGazelleResource) Update(ctx context.Context, req resource.Update
 	// Update IndexerGazelle
 	request := indexer.read(ctx, &resp.Diagnostics)
 
-	response, _, err := r.client.IndexerApi.UpdateIndexer(ctx, strconv.Itoa(int(request.GetId()))).IndexerResource(*request).Execute()
+	response, _, err := r.client.IndexerAPI.UpdateIndexer(ctx, strconv.Itoa(int(request.GetId()))).IndexerResource(*request).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Update, indexerGazelleResourceName, err))
 
@@ -279,7 +279,7 @@ func (r *IndexerGazelleResource) Delete(ctx context.Context, req resource.Delete
 	}
 
 	// Delete IndexerGazelle current value
-	_, err := r.client.IndexerApi.DeleteIndexer(ctx, int32(ID)).Execute()
+	_, err := r.client.IndexerAPI.DeleteIndexer(ctx, int32(ID)).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Delete, indexerGazelleResourceName, err))
 

@@ -236,14 +236,18 @@ func (d *DownloadClientDataSource) Read(ctx context.Context, req datasource.Read
 		return
 	}
 	// Get downloadClient current value
-	response, _, err := d.client.DownloadClientApi.ListDownloadClient(ctx).Execute()
+	response, _, err := d.client.DownloadClientAPI.ListDownloadClient(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, downloadClientDataSourceName, err))
 
 		return
 	}
 
-	data.find(ctx, data.Name.ValueString(), response, &resp.Diagnostics)
+	clients := make([]*readarr.DownloadClientResource, len(response))
+	for i := range response {
+		clients[i] = &response[i]
+	}
+	data.find(ctx, data.Name.ValueString(), clients, &resp.Diagnostics)
 	tflog.Trace(ctx, "read "+downloadClientDataSourceName)
 	// Map response body to resource schema attribute
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
