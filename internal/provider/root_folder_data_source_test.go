@@ -59,6 +59,7 @@ func rootFolderDSInit() {
 	folder.SetHost("")
 	folder.SetIsCalibreLibrary(false)
 	folder.SetName("Config")
-	folder.SetDefaultTags([]*int32{})
-	_, _, _ = client.RootFolderApi.CreateRootFolder(context.TODO()).RootFolderResource(*folder).Execute()
+	tags := make([]int32, 0)
+	folder.SetDefaultTags(tags)
+	_, _, _ = client.RootFolderAPI.CreateRootFolder(context.TODO()).RootFolderResource(*folder).Execute()
 }

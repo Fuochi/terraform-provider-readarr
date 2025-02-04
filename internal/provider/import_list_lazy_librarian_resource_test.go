@@ -64,6 +64,6 @@ func testAccImportListLazyLibrarianResourceConfig(name, folder string) string {
 		metadata_profile_id = 1
 		name = "%s"
 		base_url = "http://localhost:5299"
-		api_key = "ApiKey"
+		api_key = "APIKey"
 	}`, folder, name)
 }

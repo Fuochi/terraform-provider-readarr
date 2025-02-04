@@ -171,14 +171,18 @@ func (d *ImportListDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		return
 	}
 	// Get importList current value
-	response, _, err := d.client.ImportListApi.ListImportList(ctx).Execute()
+	response, _, err := d.client.ImportListAPI.ListImportList(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, importListDataSourceName, err))
 
 		return
 	}
 
-	data.find(ctx, data.Name.ValueString(), response, &resp.Diagnostics)
+	lists := make([]*readarr.ImportListResource, len(response))
+	for i := range response {
+		lists[i] = &response[i]
+	}
+	data.find(ctx, data.Name.ValueString(), lists, &resp.Diagnostics)
 	tflog.Trace(ctx, "read "+importListDataSourceName)
 	// Map response body to resource schema attribute
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

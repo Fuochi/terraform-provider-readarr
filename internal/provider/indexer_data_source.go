@@ -175,14 +175,18 @@ func (d *IndexerDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		return
 	}
 	// Get indexer current value
-	response, _, err := d.client.IndexerApi.ListIndexer(ctx).Execute()
+	response, _, err := d.client.IndexerAPI.ListIndexer(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, indexerDataSourceName, err))
 
 		return
 	}
 
-	data.find(ctx, data.Name.ValueString(), response, &resp.Diagnostics)
+	indexers := make([]*readarr.IndexerResource, len(response))
+	for i := range response {
+		indexers[i] = &response[i]
+	}
+	data.find(ctx, data.Name.ValueString(), indexers, &resp.Diagnostics)
 	tflog.Trace(ctx, "read "+indexerDataSourceName)
 	// Map response body to resource schema attribute
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

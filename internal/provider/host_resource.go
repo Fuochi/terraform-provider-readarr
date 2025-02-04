@@ -6,6 +6,7 @@ import (
 
 	"github.com/devopsarr/readarr-go/readarr"
 	"github.com/devopsarr/terraform-provider-readarr/internal/helpers"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -16,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -107,6 +109,7 @@ type AuthConfig struct {
 	Username          types.String `tfsdk:"username"`
 	Password          types.String `tfsdk:"password"`
 	EncryptedPassword types.String `tfsdk:"encrypted_password"`
+	Required          types.String `tfsdk:"required"`
 }
 
 func (a AuthConfig) getType() attr.Type {
@@ -116,6 +119,7 @@ func (a AuthConfig) getType() attr.Type {
 			"username":           types.StringType,
 			"password":           types.StringType,
 			"encrypted_password": types.StringType,
+			"required":           types.StringType,
 		})
 }
 
@@ -300,6 +304,15 @@ func (r *HostResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 						Computed:            true,
 						Sensitive:           true,
 					},
+					"required": schema.StringAttribute{
+						MarkdownDescription: "Required for everyone or disabled for local addresses.",
+						Optional:            true,
+						Computed:            true,
+						Validators: []validator.String{
+							stringvalidator.OneOf("disabledForLocalAddresses", "enabled"),
+						},
+						Default: stringdefault.StaticString("disabledForLocalAddresses"),
+					},
 				},
 			},
 			"ssl": schema.SingleNestedAttribute{
@@ -403,7 +416,7 @@ func (r *HostResource) Create(ctx context.Context, req resource.CreateRequest, r
 	request.SetId(1)
 
 	// Create new Host
-	response, _, err := r.client.HostConfigApi.UpdateHostConfig(ctx, strconv.Itoa(int(request.GetId()))).HostConfigResource(*request).Execute()
+	response, _, err := r.client.HostConfigAPI.UpdateHostConfig(ctx, strconv.Itoa(int(request.GetId()))).HostConfigResource(*request).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Create, hostResourceName, err))
 
@@ -427,7 +440,7 @@ func (r *HostResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	// Get host current value
-	response, _, err := r.client.HostConfigApi.GetHostConfig(ctx).Execute()
+	response, _, err := r.client.HostConfigAPI.GetHostConfig(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, hostResourceName, err))
 
@@ -454,7 +467,7 @@ func (r *HostResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	request := host.read(ctx, &resp.Diagnostics)
 
 	// Update Host
-	response, _, err := r.client.HostConfigApi.UpdateHostConfig(ctx, strconv.Itoa(int(request.GetId()))).HostConfigResource(*request).Execute()
+	response, _, err := r.client.HostConfigAPI.UpdateHostConfig(ctx, strconv.Itoa(int(request.GetId()))).HostConfigResource(*request).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Update, hostResourceName, err))
 
@@ -544,6 +557,7 @@ func (a *AuthConfig) write(host *readarr.HostConfigResource) {
 	a.Method = types.StringValue(string(host.GetAuthenticationMethod()))
 	a.Username = types.StringValue(host.GetUsername())
 	a.EncryptedPassword = types.StringValue(host.GetPassword())
+	a.Required = types.StringValue(string(host.GetAuthenticationRequired()))
 }
 
 func (s *SSLConfig) write(host *readarr.HostConfigResource) {
@@ -625,7 +639,9 @@ func (b *BackupConfig) read(host *readarr.HostConfigResource) {
 func (a *AuthConfig) read(host *readarr.HostConfigResource) {
 	host.SetAuthenticationMethod(readarr.AuthenticationType(a.Method.ValueString()))
 	host.SetUsername(a.Username.ValueString())
+	host.SetAuthenticationRequired(readarr.AuthenticationRequiredType(a.Required.ValueString()))
 	host.SetPassword(a.Password.ValueString())
+	host.SetPasswordConfirmation(a.Password.ValueString())
 }
 
 func (s *SSLConfig) read(host *readarr.HostConfigResource) {

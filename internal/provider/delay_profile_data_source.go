@@ -88,14 +88,18 @@ func (d *DelayProfileDataSource) Read(ctx context.Context, req datasource.ReadRe
 		return
 	}
 	// Get delayprofiles current value
-	response, _, err := d.client.DelayProfileApi.ListDelayProfile(ctx).Execute()
+	response, _, err := d.client.DelayProfileAPI.ListDelayProfile(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, delayProfileDataSourceName, err))
 
 		return
 	}
 
-	data.find(ctx, data.ID.ValueInt64(), response, &resp.Diagnostics)
+	profiles := make([]*readarr.DelayProfileResource, len(response))
+	for i := range response {
+		profiles[i] = &response[i]
+	}
+	data.find(ctx, data.ID.ValueInt64(), profiles, &resp.Diagnostics)
 
 	tflog.Trace(ctx, "read "+delayProfileDataSourceName)
 	// Map response body to resource schema attribute

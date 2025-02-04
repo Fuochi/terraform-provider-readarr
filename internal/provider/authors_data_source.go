@@ -107,17 +107,21 @@ func (d *AuthorsDataSource) Configure(ctx context.Context, req datasource.Config
 
 func (d *AuthorsDataSource) Read(ctx context.Context, _ datasource.ReadRequest, resp *datasource.ReadResponse) {
 	// Get authors current value
-	response, _, err := d.client.AuthorApi.ListAuthor(ctx).Execute()
+	response, _, err := d.client.AuthorAPI.ListAuthor(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.List, authorsDataSourceName, err))
-
 		return
 	}
 
 	tflog.Trace(ctx, "read "+authorsDataSourceName)
-	// Map response body to resource schema attribute
-	authors := make([]Author, len(response))
-	for i, m := range response {
+
+	pointerResponse := make([]*readarr.AuthorResource, len(response))
+	for i := range response {
+		pointerResponse[i] = &response[i]
+	}
+
+	authors := make([]Author, len(pointerResponse))
+	for i, m := range pointerResponse {
 		authors[i].write(ctx, m, &resp.Diagnostics)
 	}
 

@@ -150,7 +150,11 @@ func (c *CustomFormatCondition) write(ctx context.Context, spec *readarr.CustomF
 	c.Name = types.StringValue(spec.GetName())
 	c.Negate = types.BoolValue(spec.GetNegate())
 	c.Required = types.BoolValue(spec.GetRequired())
-	helpers.WriteFields(ctx, c, spec.GetFields(), customFormatFields)
+	pointerFields := make([]*readarr.Field, len(spec.GetFields()))
+	for i := range spec.GetFields() {
+		pointerFields[i] = &spec.GetFields()[i]
+	}
+	helpers.WriteFields(ctx, c, pointerFields, customFormatFields)
 }
 
 func (c *CustomFormatCondition) read(ctx context.Context) *readarr.CustomFormatSpecificationSchema {
@@ -160,7 +164,13 @@ func (c *CustomFormatCondition) read(ctx context.Context) *readarr.CustomFormatS
 	spec.SetImplementation(c.Implementation.ValueString())
 	spec.SetNegate(c.Negate.ValueBool())
 	spec.SetRequired(c.Required.ValueBool())
-	spec.SetFields(helpers.ReadFields(ctx, c, customFormatFields))
+
+	pointerFields := helpers.ReadFields(ctx, c, customFormatFields)
+	var fields []readarr.Field
+	for _, f := range pointerFields {
+		fields = append(fields, *f)
+	}
+	spec.SetFields(fields)
 
 	return spec
 }

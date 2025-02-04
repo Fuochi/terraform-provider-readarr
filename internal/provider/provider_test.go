@@ -31,7 +31,7 @@ func testAccPreCheck(t *testing.T) {
 
 func testAccAPIClient() *readarr.APIClient {
 	config := readarr.NewConfiguration()
-	config.AddDefaultHeader("X-Api-Key", os.Getenv("READARR_API_KEY"))
+	config.AddDefaultHeader("X-API-Key", os.Getenv("READARR_API_KEY"))
 	config.Servers[0].URL = os.Getenv("READARR_URL")
 
 	return readarr.NewAPIClient(config)

@@ -198,7 +198,7 @@ func (r *ImportListGoodreadsListResource) Create(ctx context.Context, req resour
 	// Create new ImportListGoodreadsList
 	request := importList.read(ctx, &resp.Diagnostics)
 
-	response, _, err := r.client.ImportListApi.CreateImportList(ctx).ImportListResource(*request).Execute()
+	response, _, err := r.client.ImportListAPI.CreateImportList(ctx).ImportListResource(*request).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Create, importListGoodreadsListResourceName, err))
 
@@ -222,7 +222,7 @@ func (r *ImportListGoodreadsListResource) Read(ctx context.Context, req resource
 	}
 
 	// Get ImportListGoodreadsList current value
-	response, _, err := r.client.ImportListApi.GetImportListById(ctx, int32(importList.ID.ValueInt64())).Execute()
+	response, _, err := r.client.ImportListAPI.GetImportListById(ctx, int32(importList.ID.ValueInt64())).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, importListGoodreadsListResourceName, err))
 
@@ -248,7 +248,7 @@ func (r *ImportListGoodreadsListResource) Update(ctx context.Context, req resour
 	// Update ImportListGoodreadsList
 	request := importList.read(ctx, &resp.Diagnostics)
 
-	response, _, err := r.client.ImportListApi.UpdateImportList(ctx, strconv.Itoa(int(request.GetId()))).ImportListResource(*request).Execute()
+	response, _, err := r.client.ImportListAPI.UpdateImportList(ctx, strconv.Itoa(int(request.GetId()))).ImportListResource(*request).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Update, importListGoodreadsListResourceName, err))
 
@@ -271,7 +271,7 @@ func (r *ImportListGoodreadsListResource) Delete(ctx context.Context, req resour
 	}
 
 	// Delete ImportListGoodreadsList current value
-	_, err := r.client.ImportListApi.DeleteImportList(ctx, int32(ID)).Execute()
+	_, err := r.client.ImportListAPI.DeleteImportList(ctx, int32(ID)).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Delete, importListGoodreadsListResourceName, err))
 

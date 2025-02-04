@@ -65,14 +65,17 @@ func (d *ImportListExclusionDataSource) Read(ctx context.Context, req datasource
 	}
 
 	// Get importListExclusions current value
-	response, _, err := d.client.ImportListExclusionApi.ListImportListExclusion(ctx).Execute()
+	response, _, err := d.client.ImportListExclusionAPI.ListImportListExclusion(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, importListExclusionDataSourceName, err))
 
 		return
 	}
-
-	data.find(data.ForeignID.ValueString(), response, &resp.Diagnostics)
+	exclusionLists := make([]*readarr.ImportListExclusionResource, len(response))
+	for i := range response {
+		exclusionLists[i] = &response[i]
+	}
+	data.find(data.ForeignID.ValueString(), exclusionLists, &resp.Diagnostics)
 	tflog.Trace(ctx, "read "+importListExclusionDataSourceName)
 	// Map response body to resource schema attribute
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

@@ -82,14 +82,18 @@ func (d *ReleaseProfileDataSource) Read(ctx context.Context, req datasource.Read
 		return
 	}
 	// Get releaseprofiles current value
-	response, _, err := d.client.ReleaseProfileApi.ListReleaseProfile(ctx).Execute()
+	response, _, err := d.client.ReleaseProfileAPI.ListReleaseProfile(ctx).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(helpers.ClientError, helpers.ParseClientError(helpers.Read, releaseProfileDataSourceName, err))
 
 		return
 	}
 
-	data.find(ctx, data.ID.ValueInt64(), response, &resp.Diagnostics)
+	profiles := make([]*readarr.ReleaseProfileResource, len(response))
+	for i := range response {
+		profiles[i] = &response[i]
+	}
+	data.find(ctx, data.ID.ValueInt64(), profiles, &resp.Diagnostics)
 
 	tflog.Trace(ctx, "read "+releaseProfileDataSourceName)
 	// Map response body to resource schema attribute
