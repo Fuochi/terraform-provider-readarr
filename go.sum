@@ -36,6 +36,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/devopsarr/readarr-go v0.4.0 h1:a7bO1T+Wsn0GLDIQSo9DqXFSOH/uQWvA+4bSMDPHY18=
 github.com/devopsarr/readarr-go v0.4.0/go.mod h1:v8vl5hVmUnPhfvQh1FIRB1SY1P+1owzCENj0NmAUqco=
+github.com/devopsarr/readarr-go v1.2.0 h1:URBeI5T3O3xd5Fotk9srFUyDodNSCjCfSGP/BLwOD1Q=
+github.com/devopsarr/readarr-go v1.2.0/go.mod h1:3CPPk+aCtESWEmjOMi3bKBXHcc5VVQCLCTnhlQoL4Kc=
 github.com/emirpasic/gods v1.18.1 h1:FXtiHYKDGKCW2KzwZKx0iC0PQmdlorYgdFG9jPXJ1Bc=
 github.com/emirpasic/gods v1.18.1/go.mod h1:8tpGGwCnJ5H4r6BWwaV6OrWmMoPhUl5jm/FMNAnJvWQ=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=

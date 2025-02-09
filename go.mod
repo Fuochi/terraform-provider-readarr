@@ -3,7 +3,7 @@ module github.com/devopsarr/terraform-provider-readarr
 go 1.21
 
 require (
-	github.com/devopsarr/readarr-go v0.4.0
+	github.com/devopsarr/readarr-go v1.2.0
 	github.com/hashicorp/terraform-plugin-docs v0.16.0
 	github.com/hashicorp/terraform-plugin-framework v1.5.0
 	github.com/hashicorp/terraform-plugin-framework-validators v0.12.0
